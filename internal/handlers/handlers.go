@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -15,6 +16,10 @@ func IndexHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UploadHandler(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
 	// парсим html-форму из файла
 	if err := req.ParseMultipartForm(10 << 20); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -59,5 +64,8 @@ func UploadHandler(w http.ResponseWriter, req *http.Request) {
 	}
 
 	_, _ = w.Write([]byte(result))
+	if _, err := w.Write([]byte(result)); err != nil {
+		log.Printf("failed to write response: %v", err)
+	}
 
 }
